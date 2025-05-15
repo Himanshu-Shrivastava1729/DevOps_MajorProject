@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = 'shivampandey88'
+        DOCKER_REGISTRY = 'himanshu9271'
         BACKEND_IMAGE = "${DOCKER_REGISTRY}/backend:latest"
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/frontend:latest"
     }
@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/shivampandey-14/Spe-major.git', branch: 'main'
+                git url: 'https://github.com/Himanshu-Shrivastava1729/DevOps_MajorProject.git', branch: 'main'
             }
         }
 
