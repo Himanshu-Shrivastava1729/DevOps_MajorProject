@@ -23,25 +23,25 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
-            steps {
-                echo 'Building Docker images...'
-                sh '''
-                    docker build -t ${BACKEND_IMAGE} ./Backend
-                    docker build -t ${FRONTEND_IMAGE} ./Frontend
-                '''
-            }
-        }
+        // stage('Build Docker Images') {
+        //     steps {
+        //         echo 'Building Docker images...'
+        //         sh '''
+        //             docker build -t ${BACKEND_IMAGE} ./Backend
+        //             docker build -t ${FRONTEND_IMAGE} ./Frontend
+        //         '''
+        //     }
+        // }
 
-        stage('Push Docker Images to Docker Hub') {
-            steps {
-                echo 'Pushing images to Docker Hub...'
-                sh '''
-                    docker push ${BACKEND_IMAGE}
-                    docker push ${FRONTEND_IMAGE}
-                '''
-            }
-        }
+        // stage('Push Docker Images to Docker Hub') {
+        //     steps {
+        //         echo 'Pushing images to Docker Hub...'
+        //         sh '''
+        //             docker push ${BACKEND_IMAGE}
+        //             docker push ${FRONTEND_IMAGE}
+        //         '''
+        //     }
+        // }
 
         stage('Create Kind Cluster') {
             steps {
