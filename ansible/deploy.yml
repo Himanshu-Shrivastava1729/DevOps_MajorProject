@@ -1,6 +1,6 @@
 - name: Full MLOps Pipeline via Ansible
   hosts: localhost
-  become: true
+  # become: true
 
   # These are shared paths for roles to use
   vars:
