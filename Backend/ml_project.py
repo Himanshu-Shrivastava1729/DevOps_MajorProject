@@ -16,7 +16,8 @@ app = Flask(__name__)
 # ============================
 
 LOG_FILE = "access.log"
-LOGSTASH_HOST = "logstash"  # logstash service name from docker-compose
+# LOGSTASH_HOST = "logstash"  # logstash service name from docker-compose
+LOGSTASH_HOST = "172.17.0.1"
 LOGSTASH_PORT = 5000  # logstash TCP port
 
 # Configure the root logger
