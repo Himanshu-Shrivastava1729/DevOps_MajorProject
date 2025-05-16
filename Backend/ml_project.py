@@ -19,23 +19,27 @@ LOG_FILE = "access.log"
 LOGSTASH_HOST = "logstash"  # logstash service name from docker-compose
 LOGSTASH_PORT = 5000  # logstash TCP port
 
-# Configure root logger
-logger = logging.getLogger("ml_project_logger")
-logger.setLevel(logging.INFO)
+# Configure the root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
 
-# Log to access.log file
+# File handler (optional)
 file_handler = logging.FileHandler(LOG_FILE)
 file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(file_formatter)
-logger.addHandler(file_handler)
+root_logger.addHandler(file_handler)
 
-# Also log to Logstash
+# Logstash handler for JSON logs
 try:
     logstash_handler = logstash.TCPLogstashHandler(LOGSTASH_HOST, LOGSTASH_PORT, version=1)
-    logger.addHandler(logstash_handler)
-    logger.info("Connected to Logstash successfully.")
+    root_logger.addHandler(logstash_handler)
+    root_logger.info("Connected to Logstash successfully.")
 except Exception as e:
-    logger.warning(f"Failed to connect to Logstash: {e}")
+    root_logger.warning(f"Failed to connect to Logstash: {e}")
+
+# Add logstash handler to Flask's logger as well (so Flask internal logs are captured)
+app.logger.setLevel(logging.INFO)
+app.logger.addHandler(logstash_handler)
 
 # ============================
 # Load, Preprocess, Train
@@ -43,7 +47,7 @@ except Exception as e:
 
 
 def load_and_preprocess():
-    logger.info("Loading and preprocessing data...")
+    logging.info("Loading and preprocessing data...")
     df = pd.read_csv("Assignment-2_Data.csv")
 
     # Convert target to binary
@@ -66,12 +70,12 @@ def load_and_preprocess():
     for col in ["default", "housing", "loan"]:
         df[col] = df[col].map({"yes": 1, "no": 0})
 
-    logger.info("Data preprocessing complete.")
+    logging.info("Data preprocessing complete.")
     return df
 
 
 def train_models(df):
-    logger.info("Starting model training...")
+    logging.info("Starting model training...")
     X = df.drop("y", axis=1)
     y = df["y"]
 
@@ -88,9 +92,9 @@ def train_models(df):
     for name, model in models.items():
         model.fit(X_train, y_train)
         joblib.dump((model, X.columns), f"models/{name}.pkl")
-        logger.info(f"Trained and saved model: {name}")
+        logging.info(f"Trained and saved model: {name}")
 
-    logger.info("All models trained and saved successfully.")
+    logging.info("All models trained and saved successfully.")
 
 
 # ============================
@@ -101,27 +105,27 @@ def train_models(df):
 @app.route("/")
 def index():
     client_ip = request.remote_addr
-    logger.info(f"{client_ip} accessed the root endpoint '/'")
+    logging.info(f"{client_ip} accessed the root endpoint '/'")
     return "ML Prediction API is running."
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
     client_ip = request.remote_addr
-    logger.info(f"{client_ip} accessed '/predict' endpoint")
+    logging.info(f"{client_ip} accessed '/predict' endpoint")
 
     data = request.json
     model_type = data.get("model", "log_reg")
     input_data = data.get("input")
 
     if not input_data:
-        logger.warning(f"{client_ip} - Missing input data.")
+        logging.warning(f"{client_ip} - Missing input data.")
         return jsonify({"error": "Missing input data"}), 400
 
     try:
         model, columns = joblib.load(f"models/{model_type}.pkl")
     except Exception as e:
-        logger.error(
+        logging.error(
             f"{client_ip} - Model '{model_type}' not found or failed to load. Error: {str(e)}"
         )
         return jsonify({"error": "Model type not found"}), 400
@@ -131,7 +135,7 @@ def predict():
     input_df = input_df.reindex(columns=columns, fill_value=0)
 
     prediction = model.predict(input_df)[0]
-    logger.info(f"{client_ip} - Prediction made using '{model_type}': {prediction}")
+    logging.info(f"{client_ip} - Prediction made using '{model_type}': {prediction}")
     return jsonify({"prediction": int(prediction)})
 
 
