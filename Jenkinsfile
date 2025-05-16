@@ -23,6 +23,7 @@ pipeline {
             }
         }
 
+
         // stage('Build Docker Images') {
         //     steps {
         //         echo 'Building Docker images...'
@@ -66,19 +67,24 @@ EOF
                 '''
             }
         }
+        stage('Run Ansible Playbook') {
+    steps {
+        sh 'ansible-playbook ansible/deploy.yml --vault-password-file ansible/vault.pass'
+    }
+}
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                echo 'Deploying backend and frontend...'
-                sh '''
-                    export KUBECONFIG=${WORKSPACE}/kind-kubeconfig.yaml
-                    kubectl apply -f ./k8s/backend-deployment.yaml 
-                    kubectl apply -f ./k8s/backend-service.yaml 
-                    kubectl apply -f ./k8s/frontend-deployment.yaml 
-                    kubectl apply -f ./k8s/frontend-service.yaml 
-                '''
-            }
-        }
+        // stage('Deploy to Kubernetes') {
+        //     steps {
+        //         echo 'Deploying backend and frontend...'
+        //         sh '''
+        //             export KUBECONFIG=${WORKSPACE}/kind-kubeconfig.yaml
+        //             kubectl apply -f ./k8s/backend-deployment.yaml 
+        //             kubectl apply -f ./k8s/backend-service.yaml 
+        //             kubectl apply -f ./k8s/frontend-deployment.yaml 
+        //             kubectl apply -f ./k8s/frontend-service.yaml 
+        //         '''
+        //     }
+        // }
 
         stage('Wait for Deployments to be Ready') {
             steps {

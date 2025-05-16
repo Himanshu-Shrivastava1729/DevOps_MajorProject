@@ -1,0 +1,9 @@
+- name: Pull backend image
+  docker_image:
+    name: himanshu9271/backend:latest
+    source: pull
+
+- name: Pull frontend image
+  docker_image:
+    name: himanshu9271/frontend:latest
+    source: pull

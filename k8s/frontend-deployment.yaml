@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: shivampandey88/frontend:latest
+          image: himanshu9271/frontend:latest
           ports:
             - containerPort: 5000
           env:

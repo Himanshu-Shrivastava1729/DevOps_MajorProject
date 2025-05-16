@@ -1,0 +1,7 @@
+- name: Start ELK stack via Docker Compose
+  docker_compose:
+    project_src: "{{ elk_compose_path }}"
+    files:
+      - docker-compose-elk.yml
+    state: present
+    restarted: true

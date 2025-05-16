@@ -1,0 +1,23 @@
+- name: Full MLOps Pipeline via Ansible
+  hosts: localhost
+  become: true
+
+  # These are shared paths for roles to use
+  vars:
+    backend_path: "{{ playbook_dir }}/../Backend"
+    frontend_path: "{{ playbook_dir }}/../Frontend"
+    k8s_path: "{{ playbook_dir }}/../k8s"
+    elk_compose_path: "{{ playbook_dir }}/../"
+    kubeconfig_path: "{{ lookup('env', 'WORKSPACE') }}/kind-kubeconfig.yaml"
+
+  # Vault for Docker Hub password
+  vars_files:
+    - group_vars/all/vault.yml
+
+  # Roles to run in order
+  roles:
+    - build-and-push    
+    - pull-images       
+    - deploy-elk
+    - deploy-app
+    - setup-hpa

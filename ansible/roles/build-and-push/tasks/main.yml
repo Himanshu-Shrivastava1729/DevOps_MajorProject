@@ -1,0 +1,26 @@
+- name: Log in to Docker Hub
+  docker_login:
+    username: himanshu9271
+    password: "{{ dockerhub_password }}"
+
+- name: Build backend image
+  docker_image:
+    name: himanshu9271/backend
+    tag: latest
+    build:
+      path: "{{ backend_path }}"
+    source: build
+
+- name: Push backend image
+  shell: docker push himanshu9271/backend:latest
+
+- name: Build frontend image
+  docker_image:
+    name: himanshu9271/frontend
+    tag: latest
+    build:
+      path: "{{ frontend_path }}"
+    source: build
+
+- name: Push frontend image
+  shell: docker push himanshu9271/frontend:latest

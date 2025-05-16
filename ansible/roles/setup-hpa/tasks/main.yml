@@ -1,0 +1,9 @@
+- name: Install metrics-server
+  shell: |
+    export KUBECONFIG={{ kubeconfig_path }}
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+- name: Apply HPA configuration
+  shell: |
+    export KUBECONFIG={{ kubeconfig_path }}
+    kubectl apply -f {{ k8s_path }}/hpa.yaml

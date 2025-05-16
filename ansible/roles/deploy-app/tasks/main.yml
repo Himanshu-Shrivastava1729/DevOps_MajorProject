@@ -1,0 +1,11 @@
+- name: Deploy backend to Kubernetes
+  shell: |
+    export KUBECONFIG={{ kubeconfig_path }}
+    kubectl apply -f {{ k8s_path }}/backend-deployment.yaml
+    kubectl apply -f {{ k8s_path }}/backend-service.yaml
+
+- name: Deploy frontend to Kubernetes
+  shell: |
+    export KUBECONFIG={{ kubeconfig_path }}
+    kubectl apply -f {{ k8s_path }}/frontend-deployment.yaml
+    kubectl apply -f {{ k8s_path }}/frontend-service.yaml
