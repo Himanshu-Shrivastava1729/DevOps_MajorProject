@@ -18,6 +18,6 @@
   roles:
     - build-and-push    
     - pull-images       
-    - deploy-elk
+    # - deploy-elk
     - deploy-app
-    - setup-hpa
+    # - setup-hpa
