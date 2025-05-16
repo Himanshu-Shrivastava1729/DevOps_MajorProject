@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-
+import logstash
 app = Flask(__name__)
 
 # ============================
@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 LOG_FILE = "access.log"
 LOGSTASH_HOST = "logstash"  # logstash service name from docker-compose
-LOGSTASH_PORT = 5044  # logstash TCP port
+LOGSTASH_PORT = 5000  # logstash TCP port
 
 # Configure root logger
 logger = logging.getLogger("ml_project_logger")
@@ -31,8 +31,9 @@ logger.addHandler(file_handler)
 
 # Also log to Logstash
 try:
-    logstash_handler = logging.handlers.SocketHandler(LOGSTASH_HOST, LOGSTASH_PORT)
+    logstash_handler = logstash.TCPLogstashHandler(LOGSTASH_HOST, LOGSTASH_PORT, version=1)
     logger.addHandler(logstash_handler)
+    logger.info("Connected to Logstash successfully.")
 except Exception as e:
     logger.warning(f"Failed to connect to Logstash: {e}")
 

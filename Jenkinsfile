@@ -8,7 +8,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Code') {
             steps {
                 git url: 'https://github.com/Himanshu-Shrivastava1729/DevOps_MajorProject.git', branch: 'main'
             }
