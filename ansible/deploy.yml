@@ -16,7 +16,7 @@
 
   # Roles to run in order
   roles:
-    - build-and-push    
+    # - build-and-push    
     - pull-images       
     - deploy-elk
     - deploy-app
