@@ -20,4 +20,4 @@
     - pull-images       
     - deploy-elk
     - deploy-app
-    # - setup-hpa
+    - setup-hpa
