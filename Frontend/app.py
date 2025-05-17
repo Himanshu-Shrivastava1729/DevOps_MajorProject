@@ -4,7 +4,9 @@ import os
 
 app = Flask(__name__)
 
-
+@app.route("/healthz")
+def health_check():
+    return "OK", 200
 @app.route("/", methods=["GET", "POST"])
 def index():
     result = None
