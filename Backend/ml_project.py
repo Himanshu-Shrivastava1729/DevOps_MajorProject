@@ -109,6 +109,10 @@ def index():
     logging.info(f"{client_ip} accessed the root endpoint '/'")
     return "ML Prediction API is running."
 
+@app.route("/healthz")
+def health_check():
+    return "OK", 200
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -139,6 +143,19 @@ def predict():
     logging.info(f"{client_ip} - Prediction made using '{model_type}': {prediction}")
     return jsonify({"prediction": int(prediction)})
 
+import signal
+import sys
+from threading import Event
+
+shutdown_event = Event()
+
+def graceful_shutdown(signum, frame):
+    app.logger.info("Received termination signal, shutting down gracefully...")
+    shutdown_event.set()
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, graceful_shutdown)
+signal.signal(signal.SIGINT, graceful_shutdown)
 
 # ============================
 # Train models on startup
