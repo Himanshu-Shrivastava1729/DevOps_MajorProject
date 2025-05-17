@@ -1,18 +1,18 @@
-# - name: Install Metrics Server
-#   ansible.builtin.shell: |
-#     export KUBECONFIG={{ kubeconfig_path }}
-#     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-#   args:
-#     executable: /bin/bash
+- name: Install Metrics Server
+  ansible.builtin.shell: |
+    export KUBECONFIG={{ kubeconfig_path }}
+    kubectl apply -f /home/himanshu/components.yaml
+  args:
+    executable: /bin/bash
 
-# - name: Wait for Metrics Server to be Ready
-#   ansible.builtin.shell: |
-#     export KUBECONFIG={{ kubeconfig_path }}
-#     kubectl rollout status deployment/metrics-server -n kube-system --timeout=120s
-#   register: metrics_status
-#   changed_when: "'successfully rolled out' in metrics_status.stdout"
-#   args:
-#     executable: /bin/bash
+- name: Wait for Metrics Server to be Ready
+  ansible.builtin.shell: |
+    export KUBECONFIG={{ kubeconfig_path }}
+    kubectl rollout status deployment/metrics-server -n kube-system --timeout=120s
+  register: metrics_status
+  changed_when: "'successfully rolled out' in metrics_status.stdout"
+  args:
+    executable: /bin/bash
 
 - name: Apply HPA Configuration
   kubernetes.core.k8s:
