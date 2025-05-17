@@ -1,7 +1,7 @@
 - name: Install Metrics Server
   ansible.builtin.shell: |
     export KUBECONFIG={{ kubeconfig_path }}
-    kubectl apply -f /home/himanshu/components.yaml
+    kubectl apply -f /tmp/components.yaml
   args:
     executable: /bin/bash
 
