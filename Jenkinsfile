@@ -75,7 +75,7 @@ EOF
 
         stage('Run Ansible Playbook') {
     steps {
-        sh 'ansible-playbook ansible/deploy.yml --vault-password-file ansible/vault.pass'
+        sh 'ansible-playbook ansible/deploy.yml -i ansible/inventory.ini --vault-password-file ansible/vault.pass'
     }
 }
 
