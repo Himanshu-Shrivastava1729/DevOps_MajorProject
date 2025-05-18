@@ -8,7 +8,8 @@ WORKDIR /app
 COPY . /app
 
 # Copy dataset to the correct location
-COPY Assignment-2_Data.csv /app/data/dataset.csv 
+# COPY Assignment-2_Data.csv /app/data/dataset.csv 
+
 
 # Install all dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -17,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5001
 
 # Set environment variable for dataset path
-ENV DATA_PATH="/app/data/dataset.csv"
+# ENV DATA_PATH="/app/data/dataset.csv"
 
 # Run the Flask backend
 CMD ["python", "ml_project.py"]
