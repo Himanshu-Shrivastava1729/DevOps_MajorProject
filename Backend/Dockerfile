@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose Flask default port
 EXPOSE 5001
 
-# Set environment variable for dataset path (optional, if used in your code)
+# Set environment variable for dataset path
 ENV DATA_PATH="/app/data/dataset.csv"
 
-# Run the Flask backend (assuming it's in ml_project.py)
+# Run the Flask backend
 CMD ["python", "ml_project.py"]
