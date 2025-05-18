@@ -1,40 +1,32 @@
-print("Starting backend app...")
-import time
-print("Sleeping 60 seconds before app start...")
-time.sleep(60)
-
-
 from flask import Flask, request, jsonify
 import pandas as pd
 import joblib
 import os
 import logging
 import logging.handlers
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 import logstash
+import signal
+import sys
+from threading import Event
+
 app = Flask(__name__)
 
 # Logging Setup
-
 LOG_FILE = "access.log"
-# LOGSTASH_HOST = "logstash"
 LOGSTASH_HOST = "172.17.0.1"
 LOGSTASH_PORT = 5000  # logstash TCP port
 
-# Configure the root logger
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 
-# File handler (optional)
 file_handler = logging.FileHandler(LOG_FILE)
 file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(file_formatter)
 root_logger.addHandler(file_handler)
 
-# Logstash handler for JSON logs
 try:
     logstash_handler = logstash.TCPLogstashHandler(LOGSTASH_HOST, LOGSTASH_PORT, version=1)
     root_logger.addHandler(logstash_handler)
@@ -42,66 +34,33 @@ try:
 except Exception as e:
     root_logger.warning(f"Failed to connect to Logstash: {e}")
 
-# Add logstash handler to Flask's logger as well (so Flask internal logs are captured)
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(logstash_handler)
 
-# Load, Preprocess, Train
+shutdown_event = Event()
 
+def graceful_shutdown(signum, frame):
+    app.logger.info("Received termination signal, shutting down gracefully...")
+    shutdown_event.set()
+    sys.exit(0)
 
-def load_and_preprocess():
-    logging.info("Loading and preprocessing data...")
-    df = pd.read_csv("Assignment-2_Data.csv")
+signal.signal(signal.SIGTERM, graceful_shutdown)
+signal.signal(signal.SIGINT, graceful_shutdown)
 
-    # Convert target to binary
-    df["y"] = df["y"].apply(lambda x: 1 if x == "yes" else 0)
+# Load all saved models once at startup
+MODEL_DIR = "models"
+models = {}
 
-    # Remove outliers
-    df = df[df["age"] <= 100]
-    for col in ["age", "balance"]:
-        Q1 = df[col].quantile(0.25)
-        Q3 = df[col].quantile(0.75)
-        IQR = Q3 - Q1
-        df = df[(df[col] >= Q1 - 1.5 * IQR) & (df[col] <= Q3 + 1.5 * IQR)]
-
-    # One-hot encoding
-    df = pd.get_dummies(
-        df, columns=["job", "marital", "month", "poutcome", "education", "contact"]
-    )
-
-    # Encode binary columns
-    for col in ["default", "housing", "loan"]:
-        df[col] = df[col].map({"yes": 1, "no": 0})
-
-    logging.info("Data preprocessing complete.")
-    return df
-
-
-def train_models(df):
-    logging.info("Starting model training...")
-    X = df.drop("y", axis=1)
-    y = df["y"]
-
-    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    models = {
-        "log_reg": LogisticRegression(max_iter=1000),
-        "gnb": GaussianNB(),
-        "dt": DecisionTreeClassifier(),
-    }
-
-    os.makedirs("models", exist_ok=True)
-
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        joblib.dump((model, X.columns), f"models/{name}.pkl")
-        logging.info(f"Trained and saved model: {name}")
-
-    logging.info("All models trained and saved successfully.")
-
+for model_file in os.listdir(MODEL_DIR):
+    if model_file.endswith(".pkl"):
+        model_name = model_file.replace(".pkl", "")
+        try:
+            models[model_name] = joblib.load(os.path.join(MODEL_DIR, model_file))
+            app.logger.info(f"Loaded model '{model_name}' from disk.")
+        except Exception as e:
+            app.logger.error(f"Failed to load model '{model_name}': {e}")
 
 # Flask Routes
-
 
 @app.route("/")
 def index():
@@ -112,7 +71,6 @@ def index():
 @app.route("/healthz")
 def health_check():
     return "OK", 200
-
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -127,13 +85,11 @@ def predict():
         logging.warning(f"{client_ip} - Missing input data.")
         return jsonify({"error": "Missing input data"}), 400
 
-    try:
-        model, columns = joblib.load(f"models/{model_type}.pkl")
-    except Exception as e:
-        logging.error(
-            f"{client_ip} - Model '{model_type}' not found or failed to load. Error: {str(e)}"
-        )
+    if model_type not in models:
+        logging.error(f"{client_ip} - Model '{model_type}' not found in loaded models.")
         return jsonify({"error": "Model type not found"}), 400
+
+    model, columns = models[model_type]
 
     input_df = pd.DataFrame([input_data])
     input_df = pd.get_dummies(input_df)
@@ -143,23 +99,7 @@ def predict():
     logging.info(f"{client_ip} - Prediction made using '{model_type}': {prediction}")
     return jsonify({"prediction": int(prediction)})
 
-import signal
-import sys
-from threading import Event
-
-shutdown_event = Event()
-
-def graceful_shutdown(signum, frame):
-    app.logger.info("Received termination signal, shutting down gracefully...")
-    shutdown_event.set()
-    sys.exit(0)
-
-signal.signal(signal.SIGTERM, graceful_shutdown)
-signal.signal(signal.SIGINT, graceful_shutdown)
-
-# We're training model on startup
 
 if __name__ == "__main__":
-    df = load_and_preprocess()
-    train_models(df)
-    app.run(debug=false,host="0.0.0.0", port=5001)
+    # No training here!
+    app.run(debug=False, host="0.0.0.0", port=5001)
