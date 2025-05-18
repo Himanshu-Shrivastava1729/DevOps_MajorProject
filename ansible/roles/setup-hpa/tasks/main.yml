@@ -8,7 +8,7 @@
 - name: Wait for Metrics Server to be Ready
   ansible.builtin.shell: |
     export KUBECONFIG={{ kubeconfig_path }}
-    kubectl rollout status deployment/metrics-server -n kube-system --timeout=120s
+    kubectl rollout status deployment/metrics-server -n kube-system --timeout=300s
   register: metrics_status
   changed_when: "'successfully rolled out' in metrics_status.stdout"
   args:
