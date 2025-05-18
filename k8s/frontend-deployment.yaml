@@ -25,13 +25,13 @@ spec:
             httpGet:
               path: /healthz
               port: 5000
-            initialDelaySeconds: 30
+            initialDelaySeconds: 200
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /healthz
               port: 5000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 220
             periodSeconds: 20
             failureThreshold: 3
