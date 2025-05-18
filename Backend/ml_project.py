@@ -1,3 +1,9 @@
+print("Starting backend app...")
+import time
+print("Sleeping 60 seconds before app start...")
+time.sleep(60)
+
+
 from flask import Flask, request, jsonify
 import pandas as pd
 import joblib
@@ -11,12 +17,10 @@ from sklearn.tree import DecisionTreeClassifier
 import logstash
 app = Flask(__name__)
 
-# ============================
 # Logging Setup
-# ============================
 
 LOG_FILE = "access.log"
-# LOGSTASH_HOST = "logstash"  # logstash service name from docker-compose
+# LOGSTASH_HOST = "logstash"
 LOGSTASH_HOST = "172.17.0.1"
 LOGSTASH_PORT = 5000  # logstash TCP port
 
@@ -42,9 +46,7 @@ except Exception as e:
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(logstash_handler)
 
-# ============================
 # Load, Preprocess, Train
-# ============================
 
 
 def load_and_preprocess():
@@ -98,9 +100,7 @@ def train_models(df):
     logging.info("All models trained and saved successfully.")
 
 
-# ============================
 # Flask Routes
-# ============================
 
 
 @app.route("/")
@@ -157,11 +157,9 @@ def graceful_shutdown(signum, frame):
 signal.signal(signal.SIGTERM, graceful_shutdown)
 signal.signal(signal.SIGINT, graceful_shutdown)
 
-# ============================
-# Train models on startup
-# ============================
+# We're training model on startup
 
 if __name__ == "__main__":
     df = load_and_preprocess()
     train_models(df)
-    app.run(host="0.0.0.0", port=5001)
+    app.run(debug=false,host="0.0.0.0", port=5001)
