@@ -25,7 +25,7 @@ def index():
             "poutcome": request.form["poutcome"],
         }
 
-        # Get the backend URL from environment variable or use default
+        # Backend URL from environment variable
         BACKEND_URL = os.getenv("BACKEND_URL", "http://172.17.0.2:5001")
 
         response = requests.post(

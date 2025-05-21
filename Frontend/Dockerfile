@@ -9,6 +9,4 @@ COPY . .
 
 # Expose frontend Flask port
 # EXPOSE 5000
-
-# Ensure Flask listens on all interfaces
 CMD ["python", "app.py"]
